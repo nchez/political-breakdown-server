@@ -3,6 +3,7 @@ const res = require('express/lib/response')
 const db = require('./models')
 const mongoose = require('mongoose')
 const axios = require('axios')
+const { findById } = require('./models/transaction')
 
 const createStock = async (stockName, symbol) => {
   try {
@@ -36,20 +37,24 @@ const url = `https://api.quiverquant.com/beta/historical/congresstrading/aapl`
 
 const populateTxns = async () => {
   const appleId = await createStock('Apple', 'aapl')
+  const foundStock = await db.Stock.findById(appleId)
   const response = await axios.get(url, config)
   const transactions = response.data
   for (let i = 0; i < transactions.length; i++) {
-    await db.Transaction.create({
+    const newTxn = await db.Transaction.create({
       stock: appleId,
       symbol: transactions[i].Ticker,
       reportDate: new Date(transactions[i].ReportDate),
       transactionDate: new Date(transactions[i].TransactionDate),
       representative: transactions[i].Representative,
-      Amount: transactions[i].Amount,
-      House: transactions[i].House,
-      Range: transactions[i].Range,
+      amount: transactions[i].Amount,
+      transaction: transactions[i].Transaction,
+      house: transactions[i].House,
+      range: transactions[i].Range,
     })
+    await foundStock.transactions.push(newTxn._id)
   }
+  console.log(foundStock.transactions)
   console.log('done populating')
   //   const response = await db.Transaction.find()
   //   console.log(response.length)
