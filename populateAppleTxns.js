@@ -3,7 +3,6 @@ const res = require('express/lib/response')
 const db = require('./models')
 const mongoose = require('mongoose')
 const axios = require('axios')
-const { findById } = require('./models/transaction')
 
 const createStock = async (stockName, symbol) => {
   try {
@@ -36,13 +35,15 @@ const config = {
 const url = `https://api.quiverquant.com/beta/historical/congresstrading/aapl`
 
 const populateTxns = async () => {
-  const appleId = await createStock('Apple', 'aapl')
-  const foundStock = await db.Stock.findById(appleId)
+  // const appleId = await createStock('Apple', 'aapl')
+  // const appleStock = await db.Stock.findById(appleId)
+  const appleStock = await db.Stock.findById('6297e5f829042cd9c2072638')
+  console.log(appleStock)
   const response = await axios.get(url, config)
   const transactions = response.data
   for (let i = 0; i < transactions.length; i++) {
     const newTxn = await db.Transaction.create({
-      stock: appleId,
+      stock: appleStock._id,
       symbol: transactions[i].Ticker,
       reportDate: new Date(transactions[i].ReportDate),
       transactionDate: new Date(transactions[i].TransactionDate),
@@ -52,12 +53,10 @@ const populateTxns = async () => {
       house: transactions[i].House,
       range: transactions[i].Range,
     })
-    await foundStock.transactions.push(newTxn._id)
+    appleStock.transactions.push(newTxn._id)
   }
-  console.log(foundStock.transactions)
+  appleStock.save()
   console.log('done populating')
-  //   const response = await db.Transaction.find()
-  //   console.log(response.length)
 }
 
 populateTxns()
