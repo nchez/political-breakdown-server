@@ -4,7 +4,7 @@ const db = require('../models')
 
 router.get('/:symbol', async (req, res) => {
   try {
-    const stockTxns = await db.Transaction.findAll({ stock: req.params.symbol })
+    const stockTxns = await db.Transaction.find({ symbol: req.params.symbol })
     res.json({ stockTxns })
   } catch (error) {
     console.log(error)
