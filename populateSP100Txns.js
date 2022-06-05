@@ -60,7 +60,7 @@ const populateTxns = async (arr) => {
     console.log(`stock ${count} updated`)
     count++
   }
-  console.log('done populating')
+  console.log('done populating transactions')
 }
 
 // populateTxns()
@@ -88,4 +88,36 @@ const countTxns = async (arr) => {
     })
   )
 }
-countTxns(stocks)
+// countTxns(stocks)
+
+const priceJson = fs.readFileSync('./populate_db/historical_stock_prices.json')
+
+const convertJsonToObj = (jsonObj) => {
+  return JSON.parse(jsonObj)
+}
+
+const prices = convertJsonToObj(priceJson)
+
+for (const key in prices) {
+  for (let i = 0; i < prices[key].length; i++) {
+    prices[key][i].date = new Date(
+      parseInt(prices[key][i].date.slice(0, 4)),
+      parseInt(prices[key][i].date.slice(5, 7)) - 1,
+      parseInt(prices[key][i].date.slice(8, 10))
+    )
+    prices[key][i]['symbol'] = key
+    delete prices[key][i]['dividends']
+  }
+}
+
+const populatePricesDB = async (pricesObj) => {
+  for (const symbol in pricesObj) {
+    const symbolId = await db.Price.create(pricesObj[symbol])
+  }
+}
+
+// July 25th, 2014 is the 'oldest' transaction from quiver (in the top 500 companies)
+
+populatePricesDB(prices)
+
+console.log('all done')

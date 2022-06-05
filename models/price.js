@@ -2,10 +2,11 @@ const mongoose = require('mongoose')
 const PriceSchema = mongoose.Schema({
   symbol: String,
   open: Number,
-  close: Number,
-  adjclose: Number,
   high: Number,
+  close: Number,
+  low: Number,
   volume: Number,
+  adjclose: Number,
   date: Date,
 })
 

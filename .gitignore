@@ -1,2 +1,3 @@
 node_modules
+populate_db/historical_stock_prices.json
 .env
