@@ -10,7 +10,7 @@ const createStockArr = () => {
   for (let i = 0; i < topStocks.length; i++) {
     stockArr.push({
       name: topStocks[i].Name,
-      symbol: topStocks[i].Symbol,
+      symbol: topStocks[i].Symbol.toLowerCase(),
       sector: topStocks[i].Sector,
     })
   }
@@ -63,4 +63,29 @@ const populateTxns = async (arr) => {
   console.log('done populating')
 }
 
-populateTxns()
+// populateTxns()
+
+const countTxns = async (arr) => {
+  const txnArr = []
+  for (let i = 0; i < arr.length; i++) {
+    const foundStock = await db.Stock.findOne({
+      symbol: arr[i].symbol,
+    })
+    txnArr.push({
+      name: foundStock.name,
+      numberOfTxns: foundStock.transactions.length,
+    })
+    // if (foundStock && foundStock['transactions']) {
+    //   console.log(foundStock['transactions'].length)
+    // } else {
+    //   continue
+    // }
+  }
+
+  console.log(
+    txnArr.sort(function (a, b) {
+      return b.numberOfTxns - a.numberOfTxns
+    })
+  )
+}
+countTxns(stocks)
