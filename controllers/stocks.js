@@ -6,10 +6,12 @@ router.get('/:symbol', async (req, res) => {
   try {
     const stockTxns = await db.Transaction.find({
       symbol: req.params.symbol,
-    }).sort({ transactionDate: ascending })
+    }).sort({ transactionDate: 'asc' })
     // skeleton code for getting historical stock prices
-    // const stockPrices = await db.Price.find({symbol: req.params.symbol}).sort({date: ascending})
-    res.json({ stockTxns })
+    const stockPrices = await db.Price.find({ symbol: req.params.symbol }).sort(
+      { date: 'asc' }
+    )
+    res.json({ stockTxns, stockPrices })
   } catch (error) {
     console.log(error)
   }

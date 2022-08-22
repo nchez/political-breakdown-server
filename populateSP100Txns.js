@@ -2,16 +2,18 @@ require('dotenv').config()
 const fs = require('fs')
 const db = require('./models')
 const axios = require('axios')
-const top500 = fs.readFileSync('top500.json')
-const topStocks = JSON.parse(top500)
+const top500 = fs.readFileSync('top500.txt')
+const topStocks = top500.toString().split(/\r?\n/)
+topStocks.shift()
 
 const createStockArr = () => {
   stockArr = []
   for (let i = 0; i < topStocks.length; i++) {
+    const commaSeparated = topStocks[i].split(',')
     stockArr.push({
-      name: topStocks[i].Name,
-      symbol: topStocks[i].Symbol.toLowerCase(),
-      sector: topStocks[i].Sector,
+      name: commaSeparated[1],
+      symbol: commaSeparated[0].toLowerCase(),
+      sector: commaSeparated[2],
     })
   }
   return stockArr
@@ -90,6 +92,7 @@ const countTxns = async (arr) => {
 }
 // countTxns(stocks)
 
+/*
 const priceJson = fs.readFileSync('./populate_db/historical_stock_prices.json')
 
 const convertJsonToObj = (jsonObj) => {
@@ -102,6 +105,7 @@ for (const key in prices) {
   for (let i = 0; i < prices[key].length; i++) {
     prices[key][i].date = new Date(
       parseInt(prices[key][i].date.slice(0, 4)),
+      // added -1 to correct for month zero indexing of js date object
       parseInt(prices[key][i].date.slice(5, 7)) - 1,
       parseInt(prices[key][i].date.slice(8, 10))
     )
@@ -113,11 +117,11 @@ for (const key in prices) {
 const populatePricesDB = async (pricesObj) => {
   for (const symbol in pricesObj) {
     const symbolId = await db.Price.create(pricesObj[symbol])
-  }
+  }pip 
 }
 
 // July 25th, 2014 is the 'oldest' transaction from quiver (in the top 500 companies)
 
 populatePricesDB(prices)
-
+*/
 console.log('all done')

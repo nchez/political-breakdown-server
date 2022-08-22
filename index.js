@@ -47,20 +47,20 @@ app.get('/', (req, res) => {
   res.json({ msg: 'heyyy buddddy' })
 })
 
-app.get('/:symbol', async (req, res) => {
-  // const stockTxns = await db.Transaction.find({
-  //   symbol: req.params.symbol.toUpperCase(),
-  //   function(err, arr) {
-  //     console.log(err)
-  //     arr.sort((a, b) => {
-  //       return a.transactionDate - b.transactionDate
-  //     })
-  //   },
-  // })
-  console.log(applePricesCsv)
-  csvToArray(applePricesCsv)
-  res.json({ msg: 'Hey Buddy' })
-})
+// app.get('/:symbol', async (req, res) => {
+//   // const stockTxns = await db.Transaction.find({
+//   //   symbol: req.params.symbol.toUpperCase(),
+//   //   function(err, arr) {
+//   //     console.log(err)
+//   //     arr.sort((a, b) => {
+//   //       return a.transactionDate - b.transactionDate
+//   //     })
+//   //   },
+//   // })
+//   // console.log(applePricesCsv)
+//   // csvToArray(applePricesCsv)
+//   res.json({ msg: 'Hey Buddy' })
+// })
 
 // controllers
 // app.use("/users", require("./controllers/users"));
