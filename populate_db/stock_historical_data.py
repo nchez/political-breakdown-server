@@ -1,17 +1,26 @@
 from yahooquery import Ticker
 import json
 
-f = open('../top500.json')
+f = open('top500.txt')
 
-top500 = json.load(f)
+top500 = f.readlines()
+
 
 symbols = []
+stock_info = []
+
 
 final_dict = {}
 
 for i in range(len(top500)):
-    symbols.append(top500[i]['Symbol'].lower())
-
+    if i == 0:
+        continue
+    line_arr = top500[i].split(',')
+    sector = line_arr[2][:-1]
+    name = line_arr[1]
+    symbol = line_arr[0]
+    symbols.append(symbol.lower())
+    stock_info.append({'symbol': symbol, 'name': name, 'sector': sector})
 
 # allstocks = Ticker(symbols, asynchronous=True)
 # history = allstocks.history()
@@ -25,7 +34,7 @@ for i in range(len(symbols)):
         final_dict[symbols[i]] = []
         print(f'{symbols[i]} added to dict')
     temp_ticker = Ticker(symbols[i])
-    temp_history = temp_ticker.history(start='2014-07-25', end='2022-06-04')
+    temp_history = temp_ticker.history(start='2014-07-25', end='2022-08-19')
     try:
         temp_history.to_dict('index')
         for j in temp_history.to_dict('index'):

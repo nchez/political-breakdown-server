@@ -1,4 +1,8 @@
 node_modules
 populate_db/historical_stock_prices.json
 .env
+populate_db/bin
+populate_db/include
+populate_db/lib
+not_needed
 tests
