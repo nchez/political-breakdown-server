@@ -4,9 +4,6 @@ const express = require('express')
 const cors = require('cors')
 const db = require('./models')
 const fs = require('fs')
-const applePricesCsv = fs
-  .readFileSync('applePricesSince2016-01-05.csv')
-  .toString()
 
 //var csv is the CSV file with headers
 function csvToArray(csv) {
