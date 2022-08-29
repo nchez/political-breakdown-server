@@ -18,4 +18,5 @@ db.on('error', (err) => {
 // module.exports.User = require("./congressmember");
 module.exports.Stock = require('./stock')
 module.exports.Transaction = require('./transaction')
+module.exports.CongressMember = require('./congressmember')
 module.exports.Price = require('./price')
