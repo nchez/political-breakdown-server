@@ -22,4 +22,19 @@ const populateCongress = async () => {
   }
 }
 
-populateCongress()
+const sortCongressMembers = async () => {
+  const congress = await db.CongressMember.find()
+  members = []
+  for (let i = 0; i < congress.length; i++) {
+    if (congress[i].transactions.length) {
+      const foundMember = congress[i]
+      foundMember.count = congress[i].transactions.length
+      foundMember.save()
+    }
+  }
+
+  return members
+}
+
+sortCongressMembers()
+console.log('all done')
