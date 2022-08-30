@@ -77,13 +77,13 @@ const populateTxns = async (arr) => {
 
 const populateTxnSingle = async (symb, sect, fullName) => {
   const url = `https://api.quiverquant.com/beta/historical/congresstrading/${symb}`
+  const response = await axios.get(url, config)
   const stockId = await db.Stock.create({
     symbol: symb.toLowerCase(),
     name: fullName,
     sector: sect,
   })
   const stockDb = await db.Stock.findById(stockId)
-  const response = await axios.get(url, config)
   const transactions = response.data
   for (let i = 0; i < transactions.length; i++) {
     const newTxn = await db.Transaction.create({
@@ -103,7 +103,14 @@ const populateTxnSingle = async (symb, sect, fullName) => {
   console.log(stockId)
 }
 
-populateTxnSingle('MMM', 'Industrials', '3M')
+const getTxns = async (symbol) => {
+  const url = `https://api.quiverquant.com/beta/historical/congresstrading/${symbol}`
+  const response = await axios.get(url, config)
+  console.log(response.data)
+  console.log(response.data.length)
+}
+getTxns('aapl')
+// populateTxnSingle('MMM', 'Industrials', '3M')
 // populateTxns()
 
 const countTxns = async () => {

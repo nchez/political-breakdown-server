@@ -5,32 +5,6 @@ const cors = require('cors')
 const db = require('./models')
 const fs = require('fs')
 
-//var csv is the CSV file with headers
-function csvToArray(csv) {
-  var arrayOne = csv.split('\n')
-
-  var header = arrayOne[0].split(',')
-  var noOfRow = arrayOne.length
-  var noOfCol = header.length
-
-  var jArray = []
-
-  var i = 0,
-    j = 0
-  for (i = 1; i < noOfRow; i++) {
-    var obj = {}
-    var myNewLine = arrayOne[i].split(',')
-
-    for (j = 0; j < noOfCol; j++) {
-      var headerText = header[j].substring(0, header[j].length)
-      var valueText = myNewLine[j].substring(0, myNewLine[j].length)
-      obj[headerText] = valueText
-    }
-    jArray.push(obj)
-  }
-
-  console.log(jArray)
-}
 // const req = require("express/lib/request");
 
 const app = express()
