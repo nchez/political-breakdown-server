@@ -14,8 +14,16 @@ const PORT = process.env.PORT || 3001
 app.use(cors())
 app.use(express.json())
 
-app.get('/', (req, res) => {
-  res.json({ msg: 'heyyy buddddy' })
+app.get('/', async (req, res) => {
+  const topStocks = await db.Stock.find({}, { transactions: 0 })
+    .sort({ txnCount: -1 })
+    .limit(5)
+  const prices = []
+  for (let i = 0; i < topStocks.length; i++) {
+    const stockPrices = db.Price.find({ symbol: topStocks[i].symbol })
+    prices
+  }
+  res.json({ msg: 'hi' })
 })
 
 // app.get('/:symbol', async (req, res) => {

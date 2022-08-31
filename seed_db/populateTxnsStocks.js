@@ -41,34 +41,33 @@ const getDbStockArr = async () => {
 
 // populate txns -- input is an array of stock objects {name:, symbol:, sector:}
 const populateTxns = async (arr) => {
+  arr = await getDbStockArr()
   //   for (let j = 0; j < stocks.length; j++) {
   let count = 1
-  for (let j = 0; j < stocks.length; j++) {
-    const stockId = await db.Stock.create({
-      name: stocks[j].name,
-      symbol: stocks[j].symbol.toLowerCase(),
-      sector: stocks[j].sector,
+  for (let j = arr.length - 1; j < arr.length; j++) {
+    const foundStock = await db.Stock.findOne({
+      symbol: arr[j].symbol,
     })
-    const stockSymbol = stocks[j].symbol.toLowerCase()
+    const stockSymbol = arr[j].symbol
     const url = `https://api.quiverquant.com/beta/historical/congresstrading/${stockSymbol}`
-    const stockDb = await db.Stock.findById(stockId)
     const response = await axios.get(url, config)
     const transactions = response.data
+    foundStock.transactions = []
     for (let i = 0; i < transactions.length; i++) {
       const newTxn = await db.Transaction.create({
-        stock: stockDb._id,
-        symbol: transactions[i].Ticker.toLowerCase(),
+        stock: foundStock._id,
+        symbol: stockSymbol,
         reportDate: new Date(transactions[i].ReportDate),
         transactionDate: new Date(transactions[i].TransactionDate),
-        representative: transactions[i].Representative,
+        representative: transactions[i].Representative.trim(),
         amount: transactions[i].Amount,
         transaction: transactions[i].Transaction,
         house: transactions[i].House,
         range: transactions[i].Range,
       })
-      stockDb.transactions.push(newTxn._id)
+      foundStock.transactions.push(newTxn._id)
     }
-    stockDb.save()
+    foundStock.save()
     console.log(`stock ${count} updated`)
     count++
   }
@@ -109,28 +108,23 @@ const getTxns = async (symbol) => {
   console.log(response.data)
   console.log(response.data.length)
 }
-getTxns('aapl')
+// getTxns('aapl')
 // populateTxnSingle('MMM', 'Industrials', '3M')
 // populateTxns()
 
 const countTxns = async () => {
   const stocks = await getDbStockArr()
-  const txnArr = []
   for (let i = 0; i < stocks.length; i++) {
     const foundStock = await db.Stock.findOne({
       symbol: stocks[i].symbol,
     })
-    txnArr.push({
-      name: foundStock.name,
-      numberOfTxns: foundStock.transactions.length,
-    })
+    foundStock.txnCount = foundStock.transactions.length
+    foundStock.save()
   }
-
-  txnArr.sort(function (a, b) {
-    return b.numberOfTxns - a.numberOfTxns
-  })
-  return txnArr
+  console.log('counts updated')
 }
+
+countTxns()
 
 // check stocks in top500.txt vs the stocks in the db
 const checkStocks = async (arr) => {
