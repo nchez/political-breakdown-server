@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 
-const MONGODB_URI =
-  process.env.MONGODB_URI || 'mongodb://localhost/political-breakdown'
+const MONGODB_URI = process.env.MONGODB_URI
 
 mongoose.connect(MONGODB_URI)
 
@@ -20,3 +19,4 @@ module.exports.Stock = require('./stock')
 module.exports.Transaction = require('./transaction')
 module.exports.CongressMember = require('./congressmember')
 module.exports.Price = require('./price')
+module.exports.MissingStock = require('./missingStock')

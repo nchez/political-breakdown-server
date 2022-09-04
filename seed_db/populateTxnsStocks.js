@@ -124,8 +124,6 @@ const countTxns = async () => {
   console.log('counts updated')
 }
 
-countTxns()
-
 // check stocks in top500.txt vs the stocks in the db
 const checkStocks = async (arr) => {
   const dbStocks = await getDbStockArr()
@@ -146,6 +144,96 @@ const checkStocks = async (arr) => {
   }
   console.log(missingStocks)
   return missingStocks
+}
+
+const populateSpartz = async () => {
+  const txns = await db.Transaction.find({ representative: 'Victoria Spartz' })
+  const spartz = await db.CongressMember.findOne({ name: 'Victoria Spartz' })
+  for (let i = 0; i < txns.length; i++) {
+    spartz.transactions.push(txns[i]._id)
+    spartz.count = txns.length
+  }
+  spartz.save()
+}
+
+function addDays(date, days) {
+  var result = new Date(date)
+  result.setDate(result.getDate() + days)
+  return result
+}
+
+const checkFunction = async () => {
+  const foundPrice = await db.Transaction.findOne({ symbol: 'aapl' })
+  console.log(foundPrice.transactionDate)
+  console.log(addDays(foundPrice.transactionDate, 1))
+}
+
+const addCountsToStocks = async () => {
+  const txns = await db.Transaction.find()
+  // const prices = await db.Price.find()
+  for (let i = 0; i < txns.length; i++) {
+    console.log(i)
+    const txn = txns[i]
+    let foundPrice = await db.Price.findOne({
+      symbol: txn.symbol,
+      date: txn.transactionDate,
+    })
+    let [decrementPrice, incrementPrice] = [foundPrice, foundPrice]
+    const missingPrice = await db.Price.findOne({ symbol: txn.symbol })
+    if (!missingPrice) {
+      const findMissingStock = await db.MissingStock.findOne({
+        symbol: txn.symbol,
+      })
+      if (!findMissingStock) {
+        await db.MissingStock.create({ symbol: txn.symbol })
+        console.log('missing stock added')
+      }
+      continue
+    }
+    if (!foundPrice) {
+      let j = 0
+      while (!decrementPrice && !incrementPrice) {
+        j++
+        console.log(`j is ${j}`)
+        if (j > 5) {
+          const findMissingStock = await db.MissingStock.findOne({
+            symbol: txn.symbol,
+          })
+          if (!findMissingStock) {
+            await db.MissingStock.create({ symbol: txn.symbol })
+            console.log('missing more than 5 (not business) days of data added')
+            break
+          }
+          break
+        }
+        ;[decrementPrice, incrementPrice] = await Promise.all([
+          db.Price.findOne({
+            symbol: txn.symbol,
+            date: addDays(txn.transactionDate, -j),
+          }),
+          db.Price.findOne({
+            symbol: txn.symbol,
+            date: addDays(txn.transactionDate, j),
+          }),
+        ])
+      }
+      if (!decrementPrice && !incrementPrice) {
+        continue
+      }
+      console.log(decrementPrice, incrementPrice)
+    }
+    foundPrice = decrementPrice || incrementPrice
+    foundPrice.txnCount++
+    if (txn.transaction.toLowerCase() === 'sale') {
+      foundPrice.sellCount++
+    }
+    if (txn.transaction.toLowerCase() === 'purchase') {
+      foundPrice.buyCount++
+    }
+    foundPrice.save()
+    console.log(i)
+  }
+  console.log('function done')
 }
 
 /*
