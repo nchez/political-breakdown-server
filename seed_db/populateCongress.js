@@ -1,5 +1,74 @@
 require('dotenv').config()
 const db = require('../models')
+const axios = require('axios')
+
+// config for probulica
+const config = {
+  headers: {
+    // accept: 'application/json',
+    'X-API-Key': process.env.PROPUBLICA_API_KEY,
+  },
+}
+
+// GET https://api.propublica.org/congress/v1/{congress}/{chamber}/members.json
+const addPropublicaId = async () => {
+  const ids = await db.ProApi.find({})
+  console.log(ids.length)
+  const idArr = ids.map((e) => e.apiId)
+  const filtered = idArr.filter((element, index, array) => {
+    return array.slice(index + 1).includes(element) === true
+  })
+  for (let i = 0; i < filtered.length; i++) {
+    const idDocs = await db.ProApi.find({ apiId: filtered[i] })
+    if (idDocs.length > 1) {
+      idDocs[1].remove()
+    }
+  }
+  const newIds = await db.ProApi.find({})
+  console.log(filtered.length)
+  console.log(newIds.length)
+  // sentate
+  // for (let i = 80; i < 118; i++) {
+  //   let chamber = 'senate'
+  //   let congress = i.toString()
+  //   const probulicaUrl = `https://api.propublica.org/congress/v1/${congress}/${chamber}/members.json`
+  //   console.log(probulicaUrl)
+  //   const response = await axios(probulicaUrl, config)
+  //   console.log(response.data)
+  //   for (let j = 0; j < response.data.results[0].members.length; j++) {
+  //     if (idArr.includes(response.data.results[0].members[j].id)) {
+  //       continue
+  //     } else {
+  //       const createdId = db.ProApi.create({
+  //         apiId: response.data.results[0].members[j].id,
+  //         firstName: response.data.results[0].members[j].first_name,
+  //         lastName: response.data.results[0].members[j].last_name,
+  //       })
+  //       console.log(createdId)
+  //     }
+  //   }
+  // }
+  // for (let i = 102; i < 118; i++) {
+  //   let chamber = 'house'
+  //   let congress = i.toString()
+  //   const probulicaUrl = `https://api.propublica.org/congress/v1/${congress}/${chamber}/members.json`
+  //   const response = await axios(probulicaUrl, config)
+  //   for (let j = 0; j < response.data.results[0].members.length; j++) {
+  //     if (idArr.includes(response.data.results[0].members[j].id)) {
+  //       continue
+  //     } else {
+  //       const createdId = db.ProApi.create({
+  //         apiId: response.data.results[0].members[j].id,
+  //         firstName: response.data.results[0].members[j].first_name,
+  //         lastName: response.data.results[0].members[j].last_name,
+  //       })
+  //       console.log(createdId)
+  //     }
+  //   }
+  // }
+}
+
+addPropublicaId()
 
 // creates Congress member if they do not exist in collection and populates their transaction array
 const populateCongress = async () => {
@@ -133,5 +202,32 @@ const addAliases = async () => {
   console.log('function done')
 }
 
-addAliases()
+const addFirstNames = async () => {
+  const congress = await db.CongressMember.find(
+    {
+      // firstName: 'Michael',
+      lastName: 'Conaway',
+    },
+    '-transactions'
+  )
+  console.log(congress[0])
+}
+
+const fixName = async () => {
+  const foundWrongName = await db.CongressMember.find({ lastName: 'Mitchell' })
+  foundWrongName[0].name = foundWrongName[0].name.trim()
+  foundWrongName[0].save()
+
+  console.log(foundWrongName)
+}
+
+const addTxnCounts = async () => {
+  const congress = await db.CongressMember.find()
+  for (let i = 0; i < congress.length; i++) {
+    congress[i].count = congress[i].transactions.length
+    congress[i].save()
+    console.log(i)
+  }
+}
+
 console.log('all done')
