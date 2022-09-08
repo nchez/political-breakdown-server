@@ -27,7 +27,7 @@ router.get('/stocks/:symbol', async (req, res) => {
     const stockTrades = await db.Transaction.find({
       symbol: req.params.symbol,
     })
-      .sort({ transactionDate: 1 })
+      .sort({ transactionDate: -1 })
       .limit(20)
     res.json({ trades: stockTrades })
   } catch (error) {
