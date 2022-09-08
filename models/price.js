@@ -10,6 +10,9 @@ const PriceSchema = mongoose.Schema({
   buyCount: Number,
   volume: Number,
   adjclose: Number,
+  transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
+  buyVolume: Number,
+  sellVolume: Number,
   date: Date,
 })
 

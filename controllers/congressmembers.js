@@ -2,6 +2,16 @@ const express = require('express')
 const router = express.Router()
 const db = require('../models')
 
+router.get('/', async (req, res) => {
+  try {
+    const allCongress = await db.CongressMember.find({}).sort({
+      name: 1,
+    })
+    res.json({ congress: allCongress })
+  } catch (error) {
+    console.log(error)
+  }
+})
 router.get('/:member', async (req, res) => {
   try {
     const stockTxns = await db.CongressMember.find({
