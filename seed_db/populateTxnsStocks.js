@@ -124,6 +124,38 @@ const countTxns = async () => {
   console.log('counts updated')
 }
 
+const zeroVolumeCounts = async () => {
+  const prices = await db.Price.find({})
+  for (let i = 0; i < prices.length; i++) {
+    prices[i].totalVolume = 0
+    prices[i].sellVolume = 0
+    prices[i].buyVolume = 0
+    prices[i].save()
+  }
+  console.log('function all done')
+}
+
+const convertRange = (obj) => {
+  if (obj.range.includes('-')) {
+    const hyphenIndex = obj.range.indexOf('-')
+    const firstNumber = obj.range.slice(0, hyphenIndex).trim()
+    const secondNumber = obj.range.slice(hyphenIndex + 1).trim()
+    return Math.floor(
+      (parseInt(firstNumber.slice(1).replaceAll(',', '')) +
+        parseInt(secondNumber.slice(1).replaceAll(',', ''))) /
+        2
+    )
+  } else if (obj.range.charAt(0) === '>') {
+    return parseInt(obj.range.replaceAll(',', '').slice(2))
+  } else if (obj.range.includes('.')) {
+    const amount = parseFloat('0' + obj.range.slice(1))
+    return amount
+  } else {
+    const amount = Math.floor(parseInt(obj.range.replaceAll(',', '').slice(1)))
+    return amount
+  }
+}
+
 // check stocks in top500.txt vs the stocks in the db
 const checkStocks = async (arr) => {
   const dbStocks = await getDbStockArr()
@@ -160,6 +192,15 @@ function addDays(date, days) {
   var result = new Date(date)
   result.setDate(result.getDate() + days)
   return result
+}
+
+const loopThroughTxns = async (obj) => {
+  const trades = await db.Transaction.find()
+  for (let i = 0; i < trades.length; i++) {
+    if (isNaN(convertRange(trades[i]))) {
+      console.log(`falsy value is ${trades[i].range}`)
+    }
+  }
 }
 
 const checkFunction = async () => {
@@ -220,21 +261,22 @@ const addCountsToStocks = async () => {
       if (!decrementPrice && !incrementPrice) {
         continue
       }
-      console.log(decrementPrice, incrementPrice)
     }
     foundPrice = decrementPrice || incrementPrice
-    foundPrice.txnCount++
+    foundPrice.totalVolume = foundPrice.totalVolume + convertRange(txn)
     if (txn.transaction.toLowerCase() === 'sale') {
-      foundPrice.sellCount++
+      foundPrice.sellVolume = foundPrice.sellVolume + convertRange(txn)
     }
     if (txn.transaction.toLowerCase() === 'purchase') {
-      foundPrice.buyCount++
+      foundPrice.buyVolume = foundPrice.buyVolume + convertRange(txn)
     }
     foundPrice.save()
     console.log(i)
   }
+
   console.log('function done')
 }
+addCountsToStocks()
 
 /*
 // July 25th, 2014 is the 'oldest' transaction from quiver (in the top 500 companies)
