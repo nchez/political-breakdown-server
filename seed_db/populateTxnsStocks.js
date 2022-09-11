@@ -36,12 +36,13 @@ const createStockArr = () => {
 
 const getDbStockArr = async () => {
   const stocks = await db.Stock.find({}, '-_id symbol')
+  console.log(stocks)
   return stocks
 }
 
 // populate txns -- input is an array of stock objects {name:, symbol:, sector:}
 const populateTxns = async (arr) => {
-  arr = await getDbStockArr()
+  // arr = await getDbStockArr()
   //   for (let j = 0; j < stocks.length; j++) {
   let count = 1
   for (let j = arr.length - 1; j < arr.length; j++) {
@@ -178,16 +179,6 @@ const checkStocks = async (arr) => {
   return missingStocks
 }
 
-const populateSpartz = async () => {
-  const txns = await db.Transaction.find({ representative: 'Victoria Spartz' })
-  const spartz = await db.CongressMember.findOne({ name: 'Victoria Spartz' })
-  for (let i = 0; i < txns.length; i++) {
-    spartz.transactions.push(txns[i]._id)
-    spartz.count = txns.length
-  }
-  spartz.save()
-}
-
 function addDays(date, days) {
   var result = new Date(date)
   result.setDate(result.getDate() + days)
@@ -276,7 +267,31 @@ const addCountsToStocks = async () => {
 
   console.log('function done')
 }
-addCountsToStocks()
+
+const correctAliasesInTransactions = async () => {
+  const congressWithAliases = await db.CongressMember.find(
+    { aliases: { $nin: [null, []] } },
+    '-_id name aliases'
+  )
+  let aliasObj = {}
+  console.log(congressWithAliases.length)
+  for (let i = 0; i < congressWithAliases.length; i++) {
+    console.log(i)
+    for (let j = 0; j < congressWithAliases[i].aliases.length; j++) {
+      aliasObj[congressWithAliases[i].aliases[j]] = congressWithAliases[i].name
+    }
+  }
+  const aliasFilter = Object.keys(aliasObj)
+  const aliasTransactions = await db.Transaction.find({
+    representative: { $in: aliasFilter },
+  })
+  for (let i = 0; i < aliasTransactions.length; i++) {
+    aliasTransactions[i].representative =
+      aliasObj[`${aliasTransactions[i].representative}`]
+    aliasTransactions[i].save()
+    console.log(i)
+  }
+}
 
 /*
 // July 25th, 2014 is the 'oldest' transaction from quiver (in the top 500 companies)

@@ -14,9 +14,11 @@ router.get('/congress/:uniqLastName', async (req, res) => {
     const foundMember = await db.CongressMember.findOne({
       lastName: req.params.uniqLastName,
     })
+    console.time('tradesapicall')
     const memberTrades = await db.Transaction.find({
       _id: { $in: foundMember.transactions },
     }).sort({ transactionDate: 1 })
+    console.timeEnd('tradesapicall')
     res.json({ trades: memberTrades })
   } catch (error) {
     console.log(error)
@@ -24,11 +26,11 @@ router.get('/congress/:uniqLastName', async (req, res) => {
 })
 router.get('/stocks/:symbol', async (req, res) => {
   try {
+    console.time('tradesapicall')
     const stockTrades = await db.Transaction.find({
       symbol: req.params.symbol,
-    })
-      .sort({ transactionDate: -1 })
-      .limit(20)
+    }).sort({ transactionDate: -1 })
+    console.timeEnd('tradesapicall')
     res.json({ trades: stockTrades })
   } catch (error) {
     console.log(error)

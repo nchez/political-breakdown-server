@@ -7,6 +7,7 @@ router.get('/', async (req, res) => {
   res.json({ stocks: allStocks })
 })
 
+/*
 router.get('/:symbol', async (req, res) => {
   try {
     // skeleton code for getting historical stock prices
@@ -20,6 +21,28 @@ router.get('/:symbol', async (req, res) => {
     ).limit(5)
     res.json({
       prices: stockPrices.sort((a, b) => a.date - b.date),
+      trades: stockTrades,
+    })
+  } catch (error) {
+    console.log(error)
+  }
+})
+*/
+
+router.get('/:symbol', async (req, res) => {
+  try {
+    // skeleton code for getting historical stock prices
+    console.time('api-call')
+    let aggregatePrices = await db.TestPrice.find({
+      symbol: req.params.symbol,
+    }).sort({ date: 1 })
+    console.timeEnd('api-call')
+    const stockTrades = await db.Transaction.find(
+      { symbol: req.params.symbol },
+      '-_id -__v'
+    )
+    res.json({
+      prices: aggregatePrices[0],
       trades: stockTrades,
     })
   } catch (error) {

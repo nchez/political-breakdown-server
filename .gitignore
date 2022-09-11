@@ -6,3 +6,4 @@ populate_db/include
 populate_db/lib
 not_needed
 tests
+dump

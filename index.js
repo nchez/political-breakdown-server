@@ -2,8 +2,6 @@ require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const db = require('./models')
-const fs = require('fs')
-const { allowedNodeEnvironmentFlags } = require('process')
 
 // const req = require("express/lib/request");
 
