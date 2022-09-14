@@ -26,11 +26,12 @@ router.get('/congress/:uniqLastName', async (req, res) => {
 })
 router.get('/stocks/:symbol', async (req, res) => {
   try {
-    console.time('tradesapicall')
-    const stockTrades = await db.Transaction.find({
-      symbol: req.params.symbol,
-    }).sort({ transactionDate: -1 })
-    console.timeEnd('tradesapicall')
+    const stockTrades = await db.Transaction.find(
+      {
+        symbol: req.params.symbol,
+      },
+      '-__v'
+    ).sort({ transactionDate: -1 })
     res.json({ trades: stockTrades })
   } catch (error) {
     console.log(error)

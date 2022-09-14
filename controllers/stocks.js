@@ -29,21 +29,51 @@ router.get('/:symbol', async (req, res) => {
 })
 */
 
+router.get('/:symbol/info', async (req, res) => {
+  try {
+    const foundStock = await db.Stock.findOne(
+      { symbol: req.params.symbol },
+      '-_id -transactions'
+    )
+    res.json({ stock: foundStock })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+router.get('/:symbol/congress', async (req, res) => {
+  try {
+    // group by unique id representative and count
+    const tradeCounts = await db.Transaction.aggregate([
+      {
+        $match: { symbol: req.params.symbol },
+      },
+      { $group: { _id: '$representative', count: { $count: {} } } },
+    ])
+
+    res.json({ congressCounts: tradeCounts.sort((a, b) => b.count - a.count) })
+  } catch (error) {
+    console.log(error)
+  }
+})
+
 router.get('/:symbol', async (req, res) => {
   try {
     // skeleton code for getting historical stock prices
-    console.time('api-call')
-    let aggregatePrices = await db.TestPrice.find({
-      symbol: req.params.symbol,
-    }).sort({ date: 1 })
-    console.timeEnd('api-call')
-    const stockTrades = await db.Transaction.find(
-      { symbol: req.params.symbol },
-      '-_id -__v'
-    )
+    const aggregatePrices = await db.TestPrice.findOne(
+      {
+        symbol: req.params.symbol,
+      },
+      '-_id -__v -txnCount -sellCount -buyCount -totalVolume'
+    ).sort({ date: 1 })
+    for (const prop in aggregatePrices) {
+      if (Array.isArray(aggregatePrices[prop])) {
+        aggregatePrices[prop] = aggregatePrices[prop].slice(-1000)
+      }
+    }
+    aggregatePrices.close = aggregatePrices.close.slice(-1000)
     res.json({
-      prices: aggregatePrices[0],
-      trades: stockTrades,
+      prices: aggregatePrices,
     })
   } catch (error) {
     console.log(error)
